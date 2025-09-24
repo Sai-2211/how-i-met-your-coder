@@ -1,0 +1,3 @@
+# Root requirements for Render or tools expecting a top-level file
+# Delegate to the backend's pinned dependencies
+-r backend/requirements.txt
