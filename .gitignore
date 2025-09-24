@@ -1,0 +1,70 @@
+# Environment files
+.env
+.env.local
+.env.production
+
+# Dependencies
+node_modules/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+pip-log.txt
+pip-delete-this-directory.txt
+.pytest_cache/
+
+# Data directories
+data/
+!data/.gitkeep
+uploads/
+thumbnails/
+models/
+!models/.gitkeep
+
+# Logs
+logs/
+*.log
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Build outputs
+dist/
+build/
+*.egg-info/
+
+# Cache directories
+.cache/
+.parcel-cache/
+
+# Coverage reports
+htmlcov/
+.coverage
+.coverage.*
+
+# Frontend specific
+frontend/dist/
+frontend/build/
+frontend/.next/
+
+# Python specific
+*.sqlite3
+*.db
+celerybeat-schedule
+celery-beat.pid
+
+# Docker
+.docker/
+
+# Temporary files
+tmp/
+temp/

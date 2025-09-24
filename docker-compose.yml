@@ -1,0 +1,87 @@
+version: '3.8'
+
+services:
+  # Redis for RQ job queues
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Backend API server
+  backend:
+    build:
+      context: ./backend
+      dockerfile: docker/Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./data:/app/data
+      - ./models:/models
+    environment:
+      - DATABASE_URL=sqlite:///./data/db.sqlite3
+      - REDIS_URL=redis://redis:6379/0
+      - YOLO_WEIGHTS_PATH=/models/yolov8n.pt
+      - UPLOAD_DIR=/app/data/uploads
+      - THUMBNAILS_DIR=/app/data/thumbnails
+      - ENVIRONMENT=development
+    depends_on:
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # RQ Worker for background processing
+  worker:
+    build:
+      context: .
+      dockerfile: worker/Dockerfile
+    volumes:
+      - ./data:/app/data
+      - ./models:/models
+    environment:
+      - DATABASE_URL=sqlite:///./data/db.sqlite3
+      - REDIS_URL=redis://redis:6379/0
+      - YOLO_WEIGHTS_PATH=/models/yolov8n.pt
+      - UPLOAD_DIR=/app/data/uploads
+      - THUMBNAILS_DIR=/app/data/thumbnails
+    depends_on:
+      redis:
+        condition: service_healthy
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+    deploy:
+      replicas: 2
+
+  # Frontend web application
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  redis_data:
