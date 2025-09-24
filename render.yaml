@@ -84,7 +84,7 @@ services:
     runtime: static
     repo: https://github.com/Sai-2211/how-i-met-your-coder.git
     rootDir: frontend
-    buildCommand: npm install && npm run build
+    buildCommand: npm install --no-audit --no-fund --legacy-peer-deps && npm run build
     staticPublishPath: dist
     plan: starter
     autoDeploy: true
@@ -92,6 +92,8 @@ services:
     envVars:
       - key: NODE_VERSION
         value: 20
+      - key: NPM_CONFIG_LEGACY_PEER_DEPS
+        value: true
     routes:
       - type: rewrite
         source: /*
