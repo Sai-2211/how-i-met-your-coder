@@ -58,11 +58,18 @@ app = FastAPI(
 )
 
 # Configure CORS
-allowed_origins = [
+# Allow local dev by default and optionally extend via env var
+default_origins = [
     "http://localhost:3000",  # Local development
     "http://localhost:5173",  # Vite dev server
-    "https://accidentalert-frontend.onrender.com",  # Production frontend
 ]
+extra_origins = []
+# Support either ALLOWED_ORIGINS (comma-separated) or FRONTEND_ORIGIN (single)
+if os.getenv("ALLOWED_ORIGINS"):
+    extra_origins = [o.strip() for o in os.getenv("ALLOWED_ORIGINS", "").split(",") if o.strip()]
+elif os.getenv("FRONTEND_ORIGIN"):
+    extra_origins = [os.getenv("FRONTEND_ORIGIN").strip()]
+allowed_origins = default_origins + extra_origins
 
 app.add_middleware(
     CORSMiddleware,

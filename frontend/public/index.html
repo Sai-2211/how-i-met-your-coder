@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AccidentAlert</title>
+    <style>
+      body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; margin: 2rem; color: #0f172a; }
+      .pill { display: inline-block; background: #0ea5a4; color: white; padding: 0.25rem 0.5rem; border-radius: 999px; font-size: 0.8rem; }
+      .card { border: 1px solid #e2e8f0; border-radius: 12px; padding: 1rem; margin-top: 1rem; }
+      .muted { color: #64748b; }
+      code { background: #f8fafc; padding: 0.15rem 0.35rem; border-radius: 6px; }
+      a { color: #0ea5a4; }
+    </style>
+  </head>
+  <body>
+    <span class="pill">AccidentAlert</span>
+    <h1>AI-Powered Accident Detection</h1>
+    <p class="muted">This is a lightweight landing page served as a static site. The full frontend can be added later. For now, you can access the API directly.</p>
+
+    <div class="card">
+      <h2>Backend API</h2>
+      <ul>
+        <li>Health: <a id="health-link" href="#" target="_blank" rel="noreferrer"></a></li>
+        <li>Docs: <a id="docs-link" href="#" target="_blank" rel="noreferrer"></a></li>
+      </ul>
+      <pre id="status" class="muted">Loading API status…</pre>
+    </div>
+
+    <script>
+      // Try to guess backend URL based on Render subdomain convention
+      const guessedHost = window.location.hostname.replace('frontend', 'backend');
+      const backendUrl = `https://${guessedHost}`;
+
+      const healthUrl = `${backendUrl}/health`;
+      const docsUrl = `${backendUrl}/docs`;
+      document.getElementById('health-link').textContent = healthUrl;
+      document.getElementById('health-link').href = healthUrl;
+      document.getElementById('docs-link').textContent = docsUrl;
+      document.getElementById('docs-link').href = docsUrl;
+
+      fetch(healthUrl)
+        .then(r => r.json())
+        .then(json => {
+          document.getElementById('status').textContent = JSON.stringify(json, null, 2);
+        })
+        .catch(err => {
+          document.getElementById('status').textContent = `Could not reach backend at ${healthUrl}.\n\nIf you renamed services, update the link logic in frontend/public/index.html.`;
+        });
+    </script>
+  </body>
+</html>

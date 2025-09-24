@@ -12,16 +12,16 @@ services:
     databaseName: accidentalert
     databaseUser: accidentalert
 
-  # Backend Web Service
+# Backend Web Service (Dockerized for system deps + model weights)
   - type: web
     name: accidentalert-backend
-    runtime: python3
+    env: docker
     repo: https://github.com/Sai-2211/how-i-met-your-coder.git
     rootDir: backend
-    buildCommand: pip install -r requirements.txt
-    startCommand: python -m uvicorn main:app --host 0.0.0.0 --port $PORT
+    dockerfilePath: docker/Dockerfile
     plan: starter
     healthCheckPath: /health
+    autoDeploy: true
     envVars:
       - key: DATABASE_URL
         fromDatabase:
@@ -33,13 +33,15 @@ services:
           name: accidentalert-redis
           property: connectionString
       - key: YOLO_WEIGHTS_PATH
-        value: ./models/yolov8n.pt
+        value: /models/yolov8n.pt
       - key: UPLOAD_DIR
-        value: ./data/uploads
+        value: /app/data/uploads
       - key: THUMBNAILS_DIR
-        value: ./data/thumbnails
+        value: /app/data/thumbnails
       - key: ENVIRONMENT
         value: production
+      - key: ALLOWED_ORIGINS
+        value: https://accidentalert-frontend.onrender.com
       - key: ELECTRONICCITY_BBOX_SOUTH
         value: "12.835"
       - key: ELECTRONICCITY_BBOX_NORTH
@@ -49,15 +51,15 @@ services:
       - key: ELECTRONICCITY_BBOX_EAST
         value: "77.705"
 
-  # Worker Service
+# Worker Service (Dockerized)
   - type: worker
     name: accidentalert-worker
-    runtime: python3
+    env: docker
     repo: https://github.com/Sai-2211/how-i-met-your-coder.git
-    rootDir: backend
-    buildCommand: pip install -r requirements.txt
-    startCommand: python workers/processor.py
+    rootDir: .
+    dockerfilePath: worker/Dockerfile
     plan: starter
+    autoDeploy: true
     envVars:
       - key: DATABASE_URL
         fromDatabase:
@@ -69,20 +71,20 @@ services:
           name: accidentalert-redis
           property: connectionString
       - key: YOLO_WEIGHTS_PATH
-        value: ./models/yolov8n.pt
+        value: /models/yolov8n.pt
       - key: UPLOAD_DIR
-        value: ./data/uploads
+        value: /app/data/uploads
       - key: THUMBNAILS_DIR
-        value: ./data/thumbnails
+        value: /app/data/thumbnails
 
-  # Frontend Static Site
+# Frontend Static Site (serve from public/ without build for now)
   - type: web
     name: accidentalert-frontend
     runtime: static
     repo: https://github.com/Sai-2211/how-i-met-your-coder.git
     rootDir: frontend
-    buildCommand: npm ci && npm run build
-    staticPublishPath: dist
+    buildCommand: echo "no build"
+    staticPublishPath: public
     plan: starter
     routes:
       - type: rewrite

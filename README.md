@@ -320,3 +320,45 @@ This project is licensed under the MIT License.
 ---
 
 **⚠️ Disclaimer**: This software is for educational and demonstration purposes. Users are responsible for complying with all applicable laws and terms of service when scraping social media content.
+
+## 🚀 Production Deployment on Render
+
+This repository includes a Render blueprint (render.yaml) that provisions everything:
+- Redis (for RQ queues)
+- PostgreSQL
+- Backend API (Dockerized for system dependencies and YOLO weights)
+- Worker (Dockerized)
+- Frontend static site (minimal landing page served from frontend/public)
+
+### One-time setup
+1. Push your repo to GitHub (public or private).
+2. Ensure the following files are present (already in this repo):
+   - render.yaml
+   - backend/docker/Dockerfile (downloads YOLO weights and installs system libs)
+   - worker/Dockerfile
+   - frontend/public/index.html (minimal landing page)
+
+### Deploy via Blueprint
+1. Sign in to Render → New → Blueprint.
+2. Select your GitHub repo (how-i-met-your-coder).
+3. Review services and click “Apply”. Render will provision all services.
+
+### Environment configuration
+- Backend service automatically gets DATABASE_URL and REDIS_URL from the managed services.
+- CORS: Set ALLOWED_ORIGINS on the backend service to your frontend URL (comma-separated if multiple). Example:
+  - ALLOWED_ORIGINS = https://accidentalert-frontend.onrender.com
+- You can also set FRONTEND_ORIGIN instead of ALLOWED_ORIGINS for a single origin.
+
+### Service names and URLs
+- By default, Render gives URLs like:
+  - Frontend: https://accidentalert-frontend.onrender.com
+  - Backend: https://accidentalert-backend.onrender.com
+- The minimal landing page links to the backend by replacing “frontend” with “backend” in the hostname. If you rename services, update frontend/public/index.html accordingly.
+
+### Zero-downtime updates
+- Push to main: Render auto-deploys (autoDeploy is enabled in render.yaml).
+- You can scale instances and switch plans from each service’s Settings page.
+
+### Notes
+- Backend and worker run on Docker to ensure heavy deps (OpenCV, PyTorch, EasyOCR) and YOLO weights are available.
+- If you need GPU or larger instances, change plan in render.yaml or via the UI after first deploy.
