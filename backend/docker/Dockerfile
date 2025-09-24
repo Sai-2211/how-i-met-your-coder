@@ -45,12 +45,13 @@ RUN mkdir -p data/uploads data/thumbnails logs
 # Set permissions
 RUN chmod -R 755 /app
 
-# Expose port
+# Expose default port (Render injects PORT env var; we still expose a typical default)
 EXPOSE 8000
 
-# Health check
+# Health check (use default port in container, Render routes to PORT externally)
 HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:8000/health || exit 1
+    CMD curl -f http://localhost:${PORT:-8000}/health || exit 1
 
-# Run the application
-CMD ["python", "-m", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Run the application (bind to Render's PORT if provided)
+ENV PORT=8000
+CMD ["sh", "-c", "python -m uvicorn main:app --host 0.0.0.0 --port ${PORT}"]
