@@ -84,7 +84,7 @@ services:
     runtime: static
     repo: https://github.com/Sai-2211/how-i-met-your-coder.git
     rootDir: frontend
-    buildCommand: npm ci && npm run build
+    buildCommand: npm install && npm run build
     staticPublishPath: dist
     plan: starter
     autoDeploy: true
