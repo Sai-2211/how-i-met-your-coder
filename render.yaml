@@ -22,6 +22,7 @@ services:
     plan: starter
     healthCheckPath: /health
     autoDeploy: true
+    pullRequestPreviewsEnabled: true
     envVars:
       - key: DATABASE_URL
         fromDatabase:
@@ -77,15 +78,20 @@ services:
       - key: THUMBNAILS_DIR
         value: /app/data/thumbnails
 
-# Frontend Static Site (serve from public/ without build for now)
+# Frontend Static Site (Vite build to dist)
   - type: web
     name: accidentalert-frontend
     runtime: static
     repo: https://github.com/Sai-2211/how-i-met-your-coder.git
     rootDir: frontend
-    buildCommand: echo "no build"
-    staticPublishPath: public
+    buildCommand: npm ci && npm run build
+    staticPublishPath: dist
     plan: starter
+    autoDeploy: true
+    pullRequestPreviewsEnabled: true
+    envVars:
+      - key: NODE_VERSION
+        value: 20
     routes:
       - type: rewrite
         source: /*
