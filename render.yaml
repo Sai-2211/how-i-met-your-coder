@@ -1,0 +1,90 @@
+services:
+  # Redis Service
+  - type: redis
+    name: accidentalert-redis
+    plan: starter
+    ipAllowList: []
+
+  # PostgreSQL Database
+  - type: pgsql
+    name: accidentalert-db
+    plan: starter
+    databaseName: accidentalert
+    databaseUser: accidentalert
+
+  # Backend Web Service
+  - type: web
+    name: accidentalert-backend
+    runtime: python3
+    repo: https://github.com/Sai-2211/how-i-met-your-coder.git
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: python -m uvicorn main:app --host 0.0.0.0 --port $PORT
+    plan: starter
+    healthCheckPath: /health
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: accidentalert-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: accidentalert-redis
+          property: connectionString
+      - key: YOLO_WEIGHTS_PATH
+        value: ./models/yolov8n.pt
+      - key: UPLOAD_DIR
+        value: ./data/uploads
+      - key: THUMBNAILS_DIR
+        value: ./data/thumbnails
+      - key: ENVIRONMENT
+        value: production
+      - key: ELECTRONICCITY_BBOX_SOUTH
+        value: "12.835"
+      - key: ELECTRONICCITY_BBOX_NORTH
+        value: "12.885"
+      - key: ELECTRONICCITY_BBOX_WEST
+        value: "77.655"
+      - key: ELECTRONICCITY_BBOX_EAST
+        value: "77.705"
+
+  # Worker Service
+  - type: worker
+    name: accidentalert-worker
+    runtime: python3
+    repo: https://github.com/Sai-2211/how-i-met-your-coder.git
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: python workers/processor.py
+    plan: starter
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: accidentalert-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: accidentalert-redis
+          property: connectionString
+      - key: YOLO_WEIGHTS_PATH
+        value: ./models/yolov8n.pt
+      - key: UPLOAD_DIR
+        value: ./data/uploads
+      - key: THUMBNAILS_DIR
+        value: ./data/thumbnails
+
+  # Frontend Static Site
+  - type: web
+    name: accidentalert-frontend
+    runtime: static
+    repo: https://github.com/Sai-2211/how-i-met-your-coder.git
+    rootDir: frontend
+    buildCommand: npm ci && npm run build
+    staticPublishPath: dist
+    plan: starter
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html

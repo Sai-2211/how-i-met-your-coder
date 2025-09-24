@@ -9,6 +9,10 @@ from models import Base
 
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./data/db.sqlite3")
 
+# Convert Render PostgreSQL URL format if needed
+if DATABASE_URL.startswith("postgres://"):
+    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
+
 # Create engine with SQLite-specific settings
 if DATABASE_URL.startswith("sqlite"):
     engine = create_engine(
