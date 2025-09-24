@@ -1,5 +1,3 @@
-import React from 'react'
-
 export default function App() {
   const guessedHost = typeof window !== 'undefined' ? window.location.hostname.replace('frontend', 'backend') : ''
   const backendBase = guessedHost ? `https://${guessedHost}` : ''
