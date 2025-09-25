@@ -31,7 +31,7 @@ WORKDIR /app
 # Copy requirements and install Python dependencies
 # When building from repo root, copy the backend requirements explicitly
 COPY backend/requirements.txt ./requirements.txt
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir "numpy<2.0" && pip install --no-cache-dir -r requirements.txt
 
 # Download YOLOv8 weights
 RUN mkdir -p /models && \
