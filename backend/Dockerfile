@@ -29,15 +29,16 @@ RUN apt-get update && apt-get install -y \
 WORKDIR /app
 
 # Copy requirements and install Python dependencies
-COPY requirements.txt .
+# When building from repo root, copy the backend requirements explicitly
+COPY backend/requirements.txt ./requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Download YOLOv8 weights
 RUN mkdir -p /models && \
     wget -O /models/yolov8n.pt https://github.com/ultralytics/assets/releases/download/v0.0.0/yolov8n.pt
 
-# Copy application code
-COPY . .
+# Copy application code (backend only, when building from repo root)
+COPY backend/ .
 
 # Create data directories
 RUN mkdir -p data/uploads data/thumbnails logs
